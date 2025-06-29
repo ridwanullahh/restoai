@@ -1,11 +1,71 @@
 import UniversalSDK from './sdk';
 import { createChutesAI } from './ai';
 
-// SDK Configuration
+// Validate required environment variables
+const validateEnvVars = () => {
+  const required = ['VITE_GITHUB_TOKEN', 'VITE_GITHUB_OWNER', 'VITE_GITHUB_REPO'];
+  const missing = required.filter(key => !import.meta.env[key]);
+  
+  if (missing.length > 0) {
+    console.error('❌ Missing required environment variables:', missing);
+    console.error('Please check your .env file and ensure all required variables are set.');
+    throw new Error(`Missing environment variables: ${missing.join(', ')}`);
+  }
+};
+
+// Validate environment variables on startup
+validateEnvVars();
+
+// SDK Configuration with proper GitHub credentials
 export const sdk = new UniversalSDK({
-  owner: 'restaurant-saas', // Replace with actual GitHub username
-  repo: 'restaurant-data', // Replace with actual repository name
-  token: import.meta.env.VITE_GITHUB_TOKEN || 'demo-token', // Replace with actual GitHub token
+  owner: import.meta.env.VITE_GITHUB_OWNER,
+  repo: import.meta.env.VITE_GITHUB_REPO,
+  token: import.meta.env.VITE_GITHUB_TOKEN,
+  branch: 'main',
+  basePath: 'db',
+  mediaPath: 'media',
+  cloudinary: {
+    cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+    uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+    apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY,
+    apiSecret: import.meta.env.VITE_CLOUDINARY_API_SECRET,
+  },
+  smtp: {
+    endpoint: import.meta.env.VITE_SMTP_ENDPOINT,
+    from: import.meta.env.VITE_SMTP_FROM || 'noreply@restaurantos.com',
+    test: async () => {
+      try {
+        if (!import.meta.env.VITE_SMTP_ENDPOINT) return false;
+        const response = await fetch(import.meta.env.VITE_SMTP_ENDPOINT + '/test');
+        return response.ok;
+      } catch {
+        return false;
+      }
+    }
+  },
+  templates: {
+    otp: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #f97316;">RestaurantOS Verification</h2>
+        <p>Your verification code is:</p>
+        <div style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
+          {{otp}}
+        </div>
+        <p>This code will expire in 10 minutes.</p>
+        <p>If you didn't request this code, please ignore this email.</p>
+      </div>
+    `,
+    welcome: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #f97316;">Welcome to RestaurantOS!</h2>
+        <p>Thank you for joining our platform. We're excited to help you grow your restaurant business.</p>
+        <p>Get started by setting up your restaurant profile and menu.</p>
+        <a href="${import.meta.env.VITE_APP_URL}/restaurant/dashboard" style="background: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0;">
+          Go to Dashboard
+        </a>
+      </div>
+    `
+  },
   schemas: {
     users: {
       required: ['email'],
@@ -18,13 +78,17 @@ export const sdk = new UniversalSDK({
         permissions: 'array',
         verified: 'boolean',
         avatar: 'string',
-        preferences: 'object'
+        preferences: 'object',
+        createdAt: 'date',
+        updatedAt: 'date'
       },
       defaults: {
         verified: false,
         roles: ['restaurant_owner'],
         permissions: [],
-        preferences: {}
+        preferences: {},
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     },
     restaurants: {
@@ -45,35 +109,48 @@ export const sdk = new UniversalSDK({
         settings: 'object',
         active: 'boolean',
         rating: 'number',
-        reviewCount: 'number'
+        reviewCount: 'number',
+        createdAt: 'date',
+        updatedAt: 'date'
       },
       defaults: {
         active: true,
         settings: {
-          theme: { primaryColor: '#f97316', secondaryColor: '#ea580c' },
-          features: { onlineOrdering: true, reservations: true, loyalty: true, reviews: true },
-          notifications: { email: true, sms: false, push: true }
+          theme: { 
+            primaryColor: '#f97316', 
+            secondaryColor: '#ea580c',
+            accentColor: '#fb923c'
+          },
+          features: { 
+            onlineOrdering: true, 
+            reservations: true, 
+            loyalty: true, 
+            reviews: true,
+            delivery: false,
+            takeout: true
+          },
+          notifications: { 
+            email: true, 
+            sms: false, 
+            push: true,
+            orderNotifications: true,
+            reviewNotifications: true,
+            promotionNotifications: false
+          }
         },
-        hours: {},
+        hours: {
+          monday: { open: '09:00', close: '22:00', closed: false },
+          tuesday: { open: '09:00', close: '22:00', closed: false },
+          wednesday: { open: '09:00', close: '22:00', closed: false },
+          thursday: { open: '09:00', close: '22:00', closed: false },
+          friday: { open: '09:00', close: '23:00', closed: false },
+          saturday: { open: '09:00', close: '23:00', closed: false },
+          sunday: { open: '10:00', close: '21:00', closed: false }
+        },
         rating: 0,
-        reviewCount: 0
-      }
-    },
-    menus: {
-      required: ['restaurantId', 'name'],
-      types: {
-        restaurantId: 'string',
-        name: 'string',
-        description: 'string',
-        items: 'array',
-        active: 'boolean',
-        featured: 'boolean',
-        category: 'string'
-      },
-      defaults: {
-        active: true,
-        featured: false,
-        items: []
+        reviewCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     },
     menuItems: {
@@ -89,13 +166,18 @@ export const sdk = new UniversalSDK({
         featured: 'boolean',
         allergens: 'array',
         nutritionalInfo: 'object',
-        customizations: 'array'
+        customizations: 'array',
+        createdAt: 'date',
+        updatedAt: 'date'
       },
       defaults: {
         available: true,
         featured: false,
         allergens: [],
-        customizations: []
+        customizations: [],
+        nutritionalInfo: {},
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     },
     orders: {
@@ -117,7 +199,9 @@ export const sdk = new UniversalSDK({
         deliveryAddress: 'object',
         notes: 'string',
         paymentMethod: 'object',
-        paymentStatus: 'string'
+        paymentStatus: 'string',
+        createdAt: 'date',
+        updatedAt: 'date'
       },
       defaults: {
         status: 'pending',
@@ -126,7 +210,10 @@ export const sdk = new UniversalSDK({
         paymentStatus: 'pending',
         tax: 0,
         tip: 0,
-        deliveryFee: 0
+        deliveryFee: 0,
+        subtotal: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     },
     reviews: {
@@ -142,14 +229,18 @@ export const sdk = new UniversalSDK({
         sentimentScore: 'number',
         response: 'object',
         verified: 'boolean',
-        helpful: 'number'
+        helpful: 'number',
+        createdAt: 'date',
+        updatedAt: 'date'
       },
       defaults: {
         reviewDate: new Date().toISOString(),
         sentiment: 'neutral',
         sentimentScore: 0.5,
         verified: false,
-        helpful: 0
+        helpful: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     },
     customers: {
@@ -164,14 +255,18 @@ export const sdk = new UniversalSDK({
         totalOrders: 'number',
         favoriteRestaurants: 'array',
         addresses: 'array',
-        lastOrderDate: 'date'
+        lastOrderDate: 'date',
+        createdAt: 'date',
+        updatedAt: 'date'
       },
       defaults: {
         preferences: {},
         loyaltyPoints: 0,
         totalOrders: 0,
         favoriteRestaurants: [],
-        addresses: []
+        addresses: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     },
     analytics: {
@@ -186,7 +281,9 @@ export const sdk = new UniversalSDK({
         customerCount: 'number',
         repeatCustomerRate: 'number',
         popularItems: 'array',
-        peakHours: 'array'
+        peakHours: 'array',
+        createdAt: 'date',
+        updatedAt: 'date'
       },
       defaults: {
         date: new Date().toISOString(),
@@ -197,7 +294,9 @@ export const sdk = new UniversalSDK({
         customerCount: 0,
         repeatCustomerRate: 0,
         popularItems: [],
-        peakHours: []
+        peakHours: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     },
     inventory: {
@@ -213,14 +312,18 @@ export const sdk = new UniversalSDK({
         costPerUnit: 'number',
         supplier: 'string',
         lastRestocked: 'date',
-        expiryDate: 'date'
+        expiryDate: 'date',
+        createdAt: 'date',
+        updatedAt: 'date'
       },
       defaults: {
         currentStock: 0,
         minStock: 0,
         maxStock: 100,
         unit: 'units',
-        costPerUnit: 0
+        costPerUnit: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     },
     promotions: {
@@ -237,12 +340,16 @@ export const sdk = new UniversalSDK({
         active: 'boolean',
         usageLimit: 'number',
         usedCount: 'number',
-        applicableItems: 'array'
+        applicableItems: 'array',
+        createdAt: 'date',
+        updatedAt: 'date'
       },
       defaults: {
         active: true,
         usedCount: 0,
-        applicableItems: []
+        applicableItems: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     },
     chatMessages: {
@@ -253,12 +360,14 @@ export const sdk = new UniversalSDK({
         type: 'string',
         message: 'string',
         timestamp: 'date',
-        metadata: 'object'
+        metadata: 'object',
+        createdAt: 'date'
       },
       defaults: {
         type: 'customer',
         timestamp: new Date().toISOString(),
-        metadata: {}
+        metadata: {},
+        createdAt: new Date().toISOString()
       }
     },
     notifications: {
@@ -278,122 +387,155 @@ export const sdk = new UniversalSDK({
         data: {}
       }
     }
+  },
+  auth: {
+    requireEmailVerification: false, // Disabled for demo
+    otpTriggers: [] // Disabled for demo
   }
 });
 
-// AI Configuration
-export const ai = createChutesAI(import.meta.env.VITE_CHUTES_AI_TOKEN || 'demo-token');
+// AI Configuration with error handling
+export const ai = import.meta.env.VITE_CHUTES_AI_TOKEN 
+  ? createChutesAI(import.meta.env.VITE_CHUTES_AI_TOKEN)
+  : null;
 
-// Initialize SDK
-export const initializeApp = async () => {
+// Initialize SDK with comprehensive error handling
+export const initializeApp = async (): Promise<boolean> => {
   try {
+    console.log('🚀 Initializing RestaurantOS...');
+    
+    // Test GitHub connection
     await sdk.init();
-    console.log('✅ SDK initialized successfully');
+    console.log('✅ GitHub SDK connected successfully');
+    
+    // Test AI connection if configured
+    if (ai) {
+      try {
+        await ai.chat([{ role: 'user', content: 'test' }], { max_tokens: 1 });
+        console.log('✅ Chutes AI connected successfully');
+      } catch (error) {
+        console.warn('⚠️ Chutes AI connection failed, AI features will be limited');
+      }
+    } else {
+      console.warn('⚠️ Chutes AI not configured, AI features will be limited');
+    }
     
     // Initialize demo data if collections are empty
     await initializeDemoData();
     
+    console.log('🎉 RestaurantOS initialized successfully');
     return true;
   } catch (error) {
-    console.error('❌ SDK initialization failed:', error);
+    console.error('❌ RestaurantOS initialization failed:', error);
+    
+    // Provide helpful error messages
+    if (error instanceof Error) {
+      if (error.message.includes('Missing environment variables')) {
+        console.error('💡 Solution: Copy .env.example to .env and fill in your credentials');
+      } else if (error.message.includes('GitHub')) {
+        console.error('💡 Solution: Check your GitHub token and repository settings');
+      }
+    }
+    
     return false;
   }
 };
 
-// Initialize demo data for development
+// Initialize comprehensive demo data
 const initializeDemoData = async () => {
   try {
+    console.log('📊 Checking for existing data...');
+    
     const restaurants = await sdk.get('restaurants');
     if (restaurants.length === 0) {
+      console.log('🏗️ Creating demo data...');
+      
       // Create demo restaurant
       const demoRestaurant = await sdk.insert('restaurants', {
         name: 'Bella Vista Restaurant',
         slug: 'bella-vista',
         ownerId: 'demo-owner',
-        description: 'Authentic Italian cuisine with a modern twist',
+        description: 'Authentic Italian cuisine with a modern twist, featuring fresh ingredients and traditional recipes passed down through generations.',
         cuisine: 'Italian',
-        address: '123 Main Street, Downtown',
+        address: '123 Main Street, Downtown District, City Center',
         phone: '+1 (555) 123-4567',
         email: 'info@bellavista.com',
         website: 'https://bellavista.com',
         logo: 'https://images.pexels.com/photos/1581384/pexels-photo-1581384.jpeg?auto=compress&cs=tinysrgb&w=200',
         coverImage: 'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=1200',
-        hours: {
-          monday: { open: '11:00', close: '22:00' },
-          tuesday: { open: '11:00', close: '22:00' },
-          wednesday: { open: '11:00', close: '22:00' },
-          thursday: { open: '11:00', close: '22:00' },
-          friday: { open: '11:00', close: '23:00' },
-          saturday: { open: '11:00', close: '23:00' },
-          sunday: { open: '12:00', close: '21:00' }
-        },
         rating: 4.8,
         reviewCount: 127
       });
 
-      // Create demo menu items
+      // Create comprehensive menu items
       const menuItems = [
         {
           restaurantId: demoRestaurant.id,
           name: 'Margherita Pizza',
-          description: 'Fresh mozzarella, tomatoes, basil, and olive oil on our signature wood-fired crust',
+          description: 'Fresh mozzarella, San Marzano tomatoes, fresh basil, and extra virgin olive oil on our signature wood-fired crust',
           price: 18.99,
           category: 'Pizza',
           image: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg?auto=compress&cs=tinysrgb&w=400',
           featured: true,
-          allergens: ['gluten', 'dairy']
+          allergens: ['gluten', 'dairy'],
+          nutritionalInfo: { calories: 280, protein: 12, carbs: 35, fat: 10 }
         },
         {
           restaurantId: demoRestaurant.id,
           name: 'Truffle Risotto',
-          description: 'Creamy arborio rice with black truffle, parmesan, and wild mushrooms',
+          description: 'Creamy arborio rice with black truffle, aged parmesan, wild mushrooms, and white wine',
           price: 28.99,
           category: 'Pasta & Risotto',
           image: 'https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg?auto=compress&cs=tinysrgb&w=400',
           featured: true,
-          allergens: ['dairy']
+          allergens: ['dairy'],
+          nutritionalInfo: { calories: 420, protein: 15, carbs: 45, fat: 18 }
         },
         {
           restaurantId: demoRestaurant.id,
           name: 'Grilled Branzino',
-          description: 'Mediterranean sea bass with lemon, herbs, and roasted vegetables',
+          description: 'Mediterranean sea bass grilled to perfection with lemon, fresh herbs, and seasonal roasted vegetables',
           price: 32.99,
           category: 'Seafood',
           image: 'https://images.pexels.com/photos/725991/pexels-photo-725991.jpeg?auto=compress&cs=tinysrgb&w=400',
-          allergens: ['fish']
+          allergens: ['fish'],
+          nutritionalInfo: { calories: 350, protein: 35, carbs: 8, fat: 20 }
         },
         {
           restaurantId: demoRestaurant.id,
-          name: 'Tiramisu',
-          description: 'Classic Italian dessert with espresso-soaked ladyfingers and mascarpone',
+          name: 'Classic Tiramisu',
+          description: 'Traditional Italian dessert with espresso-soaked ladyfingers, mascarpone cream, and cocoa powder',
           price: 9.99,
           category: 'Desserts',
           image: 'https://images.pexels.com/photos/6880219/pexels-photo-6880219.jpeg?auto=compress&cs=tinysrgb&w=400',
-          allergens: ['dairy', 'eggs', 'gluten']
+          allergens: ['dairy', 'eggs', 'gluten'],
+          nutritionalInfo: { calories: 320, protein: 6, carbs: 28, fat: 22 }
         },
         {
           restaurantId: demoRestaurant.id,
           name: 'Caesar Salad',
-          description: 'Crisp romaine lettuce, parmesan cheese, croutons, and our house Caesar dressing',
+          description: 'Crisp romaine lettuce, aged parmesan cheese, house-made croutons, and our signature Caesar dressing',
           price: 14.99,
           category: 'Salads',
           image: 'https://images.pexels.com/photos/2097090/pexels-photo-2097090.jpeg?auto=compress&cs=tinysrgb&w=400',
-          allergens: ['dairy', 'eggs']
+          allergens: ['dairy', 'eggs'],
+          nutritionalInfo: { calories: 180, protein: 8, carbs: 12, fat: 14 }
         },
         {
           restaurantId: demoRestaurant.id,
           name: 'Craft Beer Selection',
-          description: 'Rotating selection of local craft beers on tap',
+          description: 'Rotating selection of local craft beers on tap, featuring seasonal and limited edition brews',
           price: 7.99,
           category: 'Beverages',
           image: 'https://images.pexels.com/photos/1552630/pexels-photo-1552630.jpeg?auto=compress&cs=tinysrgb&w=400',
-          available: true
+          available: true,
+          nutritionalInfo: { calories: 150, protein: 1, carbs: 12, fat: 0 }
         }
       ];
 
       await sdk.bulkInsert('menuItems', menuItems);
 
-      // Create demo orders
+      // Create demo orders with realistic data
       const demoOrders = [
         {
           restaurantId: demoRestaurant.id,
@@ -412,7 +554,8 @@ const initializeDemoData = async () => {
           total: 36.70,
           status: 'preparing',
           orderType: 'dine-in',
-          estimatedTime: 25
+          estimatedTime: 25,
+          paymentStatus: 'paid'
         },
         {
           restaurantId: demoRestaurant.id,
@@ -431,15 +574,112 @@ const initializeDemoData = async () => {
           total: 36.31,
           status: 'ready',
           orderType: 'takeout',
-          estimatedTime: 15
+          estimatedTime: 15,
+          paymentStatus: 'paid'
         }
       ];
 
       await sdk.bulkInsert('orders', demoOrders);
 
-      console.log('✅ Demo data initialized');
+      // Create demo reviews
+      const demoReviews = [
+        {
+          restaurantId: demoRestaurant.id,
+          customerId: 'customer-1',
+          customerName: 'John Doe',
+          rating: 5,
+          comment: 'Absolutely amazing! The Margherita pizza was perfect and the service was outstanding. Will definitely be back!',
+          sentiment: 'positive',
+          sentimentScore: 0.9,
+          verified: true,
+          helpful: 3
+        },
+        {
+          restaurantId: demoRestaurant.id,
+          customerId: 'customer-2',
+          customerName: 'Jane Smith',
+          rating: 4,
+          comment: 'Great food and atmosphere. The truffle risotto was delicious, though a bit pricey. Overall a good experience.',
+          sentiment: 'positive',
+          sentimentScore: 0.7,
+          verified: true,
+          helpful: 2
+        }
+      ];
+
+      await sdk.bulkInsert('reviews', demoReviews);
+
+      // Create demo customers
+      const demoCustomers = [
+        {
+          email: 'john@example.com',
+          name: 'John Doe',
+          phone: '+1 (555) 987-6543',
+          loyaltyPoints: 150,
+          totalOrders: 3,
+          favoriteRestaurants: [demoRestaurant.id],
+          preferences: {
+            dietary: ['vegetarian'],
+            cuisine: ['Italian', 'Mediterranean']
+          },
+          addresses: [
+            {
+              street: '456 Oak Avenue',
+              city: 'Downtown',
+              state: 'CA',
+              zipCode: '90210',
+              instructions: 'Ring doorbell'
+            }
+          ]
+        },
+        {
+          email: 'jane@example.com',
+          name: 'Jane Smith',
+          phone: '+1 (555) 456-7890',
+          loyaltyPoints: 89,
+          totalOrders: 2,
+          favoriteRestaurants: [demoRestaurant.id],
+          preferences: {
+            dietary: ['gluten-free'],
+            cuisine: ['Italian']
+          },
+          addresses: [
+            {
+              street: '789 Pine Street',
+              city: 'Uptown',
+              state: 'CA',
+              zipCode: '90211'
+            }
+          ]
+        }
+      ];
+
+      await sdk.bulkInsert('customers', demoCustomers);
+
+      console.log('✅ Demo data created successfully');
+    } else {
+      console.log('✅ Existing data found, skipping demo data creation');
     }
   } catch (error) {
-    console.error('Failed to initialize demo data:', error);
+    console.error('❌ Failed to initialize demo data:', error);
+  }
+};
+
+// Export configuration for debugging
+export const config = {
+  github: {
+    owner: import.meta.env.VITE_GITHUB_OWNER,
+    repo: import.meta.env.VITE_GITHUB_REPO,
+    hasToken: !!import.meta.env.VITE_GITHUB_TOKEN
+  },
+  ai: {
+    hasToken: !!import.meta.env.VITE_CHUTES_AI_TOKEN,
+    enabled: !!ai
+  },
+  cloudinary: {
+    configured: !!(import.meta.env.VITE_CLOUDINARY_CLOUD_NAME && import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
+  },
+  smtp: {
+    configured: !!import.meta.env.VITE_SMTP_ENDPOINT
   }
 };
