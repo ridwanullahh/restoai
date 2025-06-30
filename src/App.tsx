@@ -19,6 +19,7 @@ import CustomerAuthPage from './pages/customer/CustomerAuthPage';
 // Public Components
 import LandingPage from './pages/LandingPage';
 import RestaurantPublicPage from './pages/RestaurantPublicPage';
+import CheckoutPage from './pages/CheckoutPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,19 +97,24 @@ const App: React.FC = () => {
                 {/* Landing Page */}
                 <Route path="/" element={<LandingPage />} />
                 
-                {/* Restaurant Dashboard Routes */}
+                {/* Restaurant Authentication */}
                 <Route path="/restaurant/auth" element={<RestaurantAuthPage />} />
-                <Route path="/restaurant/dashboard/*" element={<RestaurantDashboard />} />
                 
-                {/* Customer Routes */}
+                {/* Restaurant Dashboard Routes - /restaurantslug/admin/* */}
+                <Route path="/:restaurantSlug/admin/*" element={<RestaurantDashboard />} />
+                
+                {/* Customer Authentication */}
                 <Route path="/customer/auth" element={<CustomerAuthPage />} />
-                <Route path="/customer/dashboard/*" element={<CustomerDashboard />} />
                 
-                {/* Dynamic Restaurant Public Pages */}
+                {/* Customer Dashboard Routes - /restaurantslug/dashboard/* */}
+                <Route path="/:restaurantSlug/dashboard/*" element={<CustomerDashboard />} />
+                
+                {/* Restaurant Public Pages */}
                 <Route path="/:restaurantSlug" element={<RestaurantPublicPage />} />
-                <Route path="/:restaurantSlug/order" element={<CustomerDashboard />} />
                 <Route path="/:restaurantSlug/menu" element={<RestaurantPublicPage />} />
+                <Route path="/:restaurantSlug/menu/:itemId" element={<RestaurantPublicPage />} />
                 <Route path="/:restaurantSlug/reviews" element={<RestaurantPublicPage />} />
+                <Route path="/:restaurantSlug/checkout" element={<CheckoutPage />} />
                 
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />

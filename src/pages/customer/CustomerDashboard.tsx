@@ -1,7 +1,8 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCustomer } from '../../contexts/CustomerContext';
+import { useRestaurant } from '../../contexts/RestaurantContext';
 import CustomerAuthPage from './CustomerAuthPage';
 import CustomerHeader from '../../components/customer/CustomerHeader';
 import CustomerSidebar from '../../components/customer/CustomerSidebar';
@@ -30,8 +31,13 @@ const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 const CustomerDashboard: React.FC = () => {
+  const { restaurantSlug } = useParams<{ restaurantSlug: string }>();
   const { isAuthenticated, user, loading } = useAuth();
   const { customer } = useCustomer();
+  const { restaurants } = useRestaurant();
+
+  // Find restaurant by slug
+  const restaurant = restaurants.find(r => r.slug === restaurantSlug);
 
   if (loading) {
     return (
@@ -41,8 +47,20 @@ const CustomerDashboard: React.FC = () => {
     );
   }
 
-  if (!isAuthenticated || !user?.roles?.includes('customer')) {
+  if (!isAuthenticated) {
     return <CustomerAuthPage />;
+  }
+
+  if (!restaurant) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Restaurant Not Found</h1>
+          <p className="text-gray-600 mb-4">The restaurant you're looking for doesn't exist.</p>
+          <Navigate to="/" replace />
+        </div>
+      </div>
+    );
   }
 
   return (

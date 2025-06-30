@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRestaurant } from '../../contexts/RestaurantContext';
 import RestaurantAuthPage from './RestaurantAuthPage';
@@ -35,8 +35,19 @@ const RestaurantLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 };
 
 const RestaurantDashboard: React.FC = () => {
+  const { restaurantSlug } = useParams<{ restaurantSlug: string }>();
   const { isAuthenticated, user, loading } = useAuth();
-  const { hasRestaurant, loading: restaurantLoading } = useRestaurant();
+  const { restaurants, currentRestaurant, selectRestaurant, loading: restaurantLoading } = useRestaurant();
+
+  // Find restaurant by slug and set as current
+  React.useEffect(() => {
+    if (restaurantSlug && restaurants.length > 0) {
+      const restaurant = restaurants.find(r => r.slug === restaurantSlug);
+      if (restaurant && (!currentRestaurant || currentRestaurant.slug !== restaurantSlug)) {
+        selectRestaurant(restaurant);
+      }
+    }
+  }, [restaurantSlug, restaurants, currentRestaurant, selectRestaurant]);
 
   if (loading || restaurantLoading) {
     return (
@@ -50,8 +61,22 @@ const RestaurantDashboard: React.FC = () => {
     return <RestaurantAuthPage />;
   }
 
-  // Show onboarding if user doesn't have a restaurant
-  if (!hasRestaurant) {
+  // Check if user owns this restaurant
+  const restaurant = restaurants.find(r => r.slug === restaurantSlug);
+  if (!restaurant) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Restaurant Not Found</h1>
+          <p className="text-gray-600 mb-4">You don't have access to this restaurant's admin panel.</p>
+          <Navigate to="/restaurant/auth" replace />
+        </div>
+      </div>
+    );
+  }
+
+  // Show onboarding if user doesn't have any restaurants
+  if (restaurants.length === 0) {
     return <RestaurantOnboarding />;
   }
 
