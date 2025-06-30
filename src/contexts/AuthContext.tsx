@@ -71,6 +71,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       return false;
     } catch (error) {
+      console.error('Login error:', error);
       toast.error(error instanceof Error ? error.message : 'Login failed');
       return false;
     } finally {
@@ -81,10 +82,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (email: string, password: string, profile: Partial<User> = {}): Promise<boolean> => {
     try {
       setLoading(true);
-      await sdk.register(email, password, profile);
-      toast.success('Registration successful! Please check your email for verification.');
+      
+      // Set default role based on context
+      const defaultProfile = {
+        ...profile,
+        roles: profile.roles || ['restaurant_owner'],
+        verified: true, // Skip email verification for demo
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      await sdk.register(email, password, defaultProfile);
+      
+      // Auto-login after registration
+      const loginResult = await sdk.login(email, password);
+      if (typeof loginResult === 'string') {
+        const session = sdk.getSession(loginResult);
+        if (session) {
+          setUser(session.user);
+          setToken(loginResult);
+          localStorage.setItem('auth_token', loginResult);
+          toast.success('Registration successful! Welcome to RestaurantOS!');
+          return true;
+        }
+      }
+      
+      toast.success('Registration successful! Please log in.');
       return true;
     } catch (error) {
+      console.error('Registration error:', error);
       toast.error(error instanceof Error ? error.message : 'Registration failed');
       return false;
     } finally {

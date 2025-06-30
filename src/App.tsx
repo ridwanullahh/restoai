@@ -20,23 +20,68 @@ import CustomerAuthPage from './pages/customer/CustomerAuthPage';
 import LandingPage from './pages/LandingPage';
 import RestaurantPublicPage from './pages/RestaurantPublicPage';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App: React.FC = () => {
   const [appInitialized, setAppInitialized] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
 
   useEffect(() => {
     const initApp = async () => {
-      await initializeApp();
-      setAppInitialized(true);
+      try {
+        const success = await initializeApp();
+        if (success) {
+          setAppInitialized(true);
+        } else {
+          setInitError('Failed to initialize the application. Please check your configuration.');
+        }
+      } catch (error) {
+        console.error('App initialization error:', error);
+        setInitError(error instanceof Error ? error.message : 'Unknown initialization error');
+      }
     };
     initApp();
   }, []);
 
+  if (initError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md mx-auto text-center p-6">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <strong className="font-bold">Configuration Error!</strong>
+            <span className="block sm:inline"> {initError}</span>
+          </div>
+          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded">
+            <p className="text-sm">
+              <strong>Quick Fix:</strong>
+              <br />
+              1. Copy <code>.env.example</code> to <code>.env</code>
+              <br />
+              2. Add your GitHub token and repository details
+              <br />
+              3. Refresh the page
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!appInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gray-600">Initializing RestaurantOS...</p>
+          <p className="text-sm text-gray-500">Connecting to GitHub database...</p>
+        </div>
       </div>
     );
   }
