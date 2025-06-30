@@ -22,16 +22,16 @@ const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const location = useLocation();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: Menu, label: 'Menu Management', path: '/menu' },
-    { icon: ShoppingBag, label: 'Orders', path: '/orders' },
-    { icon: Star, label: 'Reviews', path: '/reviews' },
-    { icon: Users, label: 'Customers', path: '/customers' },
-    { icon: BarChart3, label: 'Analytics', path: '/analytics' },
-    { icon: MessageCircle, label: 'AI Assistant', path: '/ai-assistant' },
-    { icon: Package, label: 'Inventory', path: '/inventory' },
-    { icon: Gift, label: 'Promotions', path: '/promotions' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/restaurant/dashboard/overview' },
+    { icon: Menu, label: 'Menu Management', path: '/restaurant/dashboard/menu' },
+    { icon: ShoppingBag, label: 'Orders', path: '/restaurant/dashboard/orders' },
+    { icon: Star, label: 'Reviews', path: '/restaurant/dashboard/reviews' },
+    { icon: Users, label: 'Customers', path: '/restaurant/dashboard/customers' },
+    { icon: BarChart3, label: 'Analytics', path: '/restaurant/dashboard/analytics' },
+    { icon: MessageCircle, label: 'AI Assistant', path: '/restaurant/dashboard/ai-assistant' },
+    { icon: Package, label: 'Inventory', path: '/restaurant/dashboard/inventory' },
+    { icon: Gift, label: 'Promotions', path: '/restaurant/dashboard/promotions' },
+    { icon: Settings, label: 'Settings', path: '/restaurant/dashboard/settings' },
   ];
 
   return (
