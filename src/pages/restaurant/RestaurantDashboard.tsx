@@ -58,7 +58,7 @@ const RestaurantDashboard: React.FC = () => {
   return (
     <RestaurantLayout>
       <Routes>
-        <Route path="/" element={<Navigate to="/restaurant/dashboard/overview" replace />} />
+        <Route path="/" element={<Navigate to="overview" replace />} />
         <Route path="/overview" element={<DashboardPage />} />
         <Route path="/menu" element={<MenuPage />} />
         <Route path="/orders" element={<OrdersPage />} />
@@ -69,7 +69,7 @@ const RestaurantDashboard: React.FC = () => {
         <Route path="/inventory" element={<InventoryPage />} />
         <Route path="/promotions" element={<PromotionsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="*" element={<Navigate to="/restaurant/dashboard/overview" replace />} />
+        <Route path="*" element={<Navigate to="overview" replace />} />
       </Routes>
     </RestaurantLayout>
   );
