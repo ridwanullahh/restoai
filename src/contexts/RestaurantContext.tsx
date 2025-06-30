@@ -8,6 +8,7 @@ interface RestaurantContextType {
   restaurants: Restaurant[];
   currentRestaurant: Restaurant | null;
   loading: boolean;
+  hasRestaurant: boolean;
   createRestaurant: (data: Partial<Restaurant>) => Promise<Restaurant | null>;
   updateRestaurant: (id: string, data: Partial<Restaurant>) => Promise<Restaurant | null>;
   deleteRestaurant: (id: string) => Promise<boolean>;
@@ -81,10 +82,14 @@ export const RestaurantProvider: React.FC<RestaurantProviderProps> = ({ children
         slug,
         ownerId: user?.id || user?.uid || '',
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       const newRestaurant = await sdk.insert<Restaurant>('restaurants', restaurantData);
       setRestaurants(prev => [...prev, newRestaurant]);
+      
+      // Auto-select the new restaurant
+      setCurrentRestaurant(newRestaurant);
       
       toast.success('Restaurant created successfully!');
       return newRestaurant;
@@ -161,10 +166,13 @@ export const RestaurantProvider: React.FC<RestaurantProviderProps> = ({ children
     await loadRestaurants();
   };
 
+  const hasRestaurant = restaurants.length > 0;
+
   const value: RestaurantContextType = {
     restaurants,
     currentRestaurant,
     loading,
+    hasRestaurant,
     createRestaurant,
     updateRestaurant,
     deleteRestaurant,
