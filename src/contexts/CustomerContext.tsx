@@ -42,8 +42,19 @@ export const CustomerProvider: React.FC<CustomerProviderProps> = ({ children }) 
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated && user && user.roles?.includes('customer')) {
+    if (isAuthenticated && user) {
+      // Auto-create customer role if user doesn't have it
+      if (!user.roles?.includes('customer')) {
+        const updatedRoles = [...(user.roles || []), 'customer'];
+        // Update user roles in the background
+        sdk.update('users', user.id || user.uid || '', { roles: updatedRoles }).catch(console.error);
+      }
       loadCustomerData();
+    } else {
+      // Clear data when user logs out
+      setCustomer(null);
+      setOrders([]);
+      setReviews([]);
     }
   }, [isAuthenticated, user]);
 
@@ -77,7 +88,7 @@ export const CustomerProvider: React.FC<CustomerProviderProps> = ({ children }) 
 
       // Load customer orders
       const customerOrders = await sdk.queryBuilder<Order>('orders')
-        .where(order => order.customerId === user.id || order.customerId === user.uid)
+        .where(order => order.customerId === user.id || order.customerId === user.uid || order.customerInfo?.email === user.email)
         .sort('orderDate', 'desc')
         .exec();
       setOrders(customerOrders);
@@ -175,7 +186,8 @@ export const CustomerProvider: React.FC<CustomerProviderProps> = ({ children }) 
         customerInfo: {
           name: customer.name || user.name || '',
           email: customer.email,
-          phone: customer.phone || ''
+          phone: customer.phone || '',
+          ...orderData.customerInfo
         },
         orderDate: new Date().toISOString(),
         status: 'pending',

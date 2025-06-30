@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setLoading(true);
       
-      // Set default role based on context
+      // Set default role based on context or provided profile
       const defaultProfile = {
         ...profile,
         roles: profile.roles || ['restaurant_owner'],

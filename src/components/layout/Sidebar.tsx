@@ -12,7 +12,7 @@ import {
   Gift,
   Settings
 } from 'lucide-react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useParams } from 'react-router-dom';
 
 interface SidebarProps {
   className?: string;
@@ -20,18 +20,19 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const location = useLocation();
+  const { restaurantSlug } = useParams<{ restaurantSlug: string }>();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/restaurant/dashboard/overview' },
-    { icon: Menu, label: 'Menu Management', path: '/restaurant/dashboard/menu' },
-    { icon: ShoppingBag, label: 'Orders', path: '/restaurant/dashboard/orders' },
-    { icon: Star, label: 'Reviews', path: '/restaurant/dashboard/reviews' },
-    { icon: Users, label: 'Customers', path: '/restaurant/dashboard/customers' },
-    { icon: BarChart3, label: 'Analytics', path: '/restaurant/dashboard/analytics' },
-    { icon: MessageCircle, label: 'AI Assistant', path: '/restaurant/dashboard/ai-assistant' },
-    { icon: Package, label: 'Inventory', path: '/restaurant/dashboard/inventory' },
-    { icon: Gift, label: 'Promotions', path: '/restaurant/dashboard/promotions' },
-    { icon: Settings, label: 'Settings', path: '/restaurant/dashboard/settings' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: `/${restaurantSlug}/admin/overview` },
+    { icon: Menu, label: 'Menu Management', path: `/${restaurantSlug}/admin/menu` },
+    { icon: ShoppingBag, label: 'Orders', path: `/${restaurantSlug}/admin/orders` },
+    { icon: Star, label: 'Reviews', path: `/${restaurantSlug}/admin/reviews` },
+    { icon: Users, label: 'Customers', path: `/${restaurantSlug}/admin/customers` },
+    { icon: BarChart3, label: 'Analytics', path: `/${restaurantSlug}/admin/analytics` },
+    { icon: MessageCircle, label: 'AI Assistant', path: `/${restaurantSlug}/admin/ai-assistant` },
+    { icon: Package, label: 'Inventory', path: `/${restaurantSlug}/admin/inventory` },
+    { icon: Gift, label: 'Promotions', path: `/${restaurantSlug}/admin/promotions` },
+    { icon: Settings, label: 'Settings', path: `/${restaurantSlug}/admin/settings` },
   ];
 
   return (

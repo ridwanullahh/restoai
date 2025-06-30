@@ -9,7 +9,7 @@ import {
   User,
   Settings
 } from 'lucide-react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useParams } from 'react-router-dom';
 
 interface CustomerSidebarProps {
   className?: string;
@@ -17,14 +17,15 @@ interface CustomerSidebarProps {
 
 const CustomerSidebar: React.FC<CustomerSidebarProps> = ({ className = '' }) => {
   const location = useLocation();
+  const { restaurantSlug } = useParams<{ restaurantSlug: string }>();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Overview', path: '/customer/dashboard/overview' },
-    { icon: ShoppingBag, label: 'My Orders', path: '/customer/dashboard/orders' },
-    { icon: Star, label: 'My Reviews', path: '/customer/dashboard/reviews' },
-    { icon: Heart, label: 'Favorites', path: '/customer/dashboard/favorites' },
-    { icon: Gift, label: 'Loyalty Program', path: '/customer/dashboard/loyalty' },
-    { icon: User, label: 'Profile', path: '/customer/dashboard/profile' },
+    { icon: LayoutDashboard, label: 'Overview', path: `/${restaurantSlug}/dashboard/overview` },
+    { icon: ShoppingBag, label: 'My Orders', path: `/${restaurantSlug}/dashboard/orders` },
+    { icon: Star, label: 'My Reviews', path: `/${restaurantSlug}/dashboard/reviews` },
+    { icon: Heart, label: 'Favorites', path: `/${restaurantSlug}/dashboard/favorites` },
+    { icon: Gift, label: 'Loyalty Program', path: `/${restaurantSlug}/dashboard/loyalty` },
+    { icon: User, label: 'Profile', path: `/${restaurantSlug}/dashboard/profile` },
   ];
 
   return (

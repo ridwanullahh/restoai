@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star, MapPin, Phone, Globe, Clock, Heart, ShoppingBag, Plus, Minus } from 'lucide-react';
+import { Star, MapPin, Phone, Globe, Clock, Heart, ShoppingBag, Plus, Minus, Eye } from 'lucide-react';
 import { sdk } from '../lib/config';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -35,6 +35,7 @@ interface MenuItem {
   available: boolean;
   featured: boolean;
   allergens?: string[];
+  nutritionalInfo?: any;
 }
 
 interface CartItem extends MenuItem {
@@ -42,7 +43,8 @@ interface CartItem extends MenuItem {
 }
 
 const RestaurantPublicPage: React.FC = () => {
-  const { restaurantSlug } = useParams<{ restaurantSlug: string }>();
+  const { restaurantSlug, itemId } = useParams<{ restaurantSlug: string; itemId?: string }>();
+  const navigate = useNavigate();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -50,12 +52,25 @@ const RestaurantPublicPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('menu');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [isItemModalOpen, setIsItemModalOpen] = useState(false);
 
   useEffect(() => {
     if (restaurantSlug) {
       loadRestaurantData();
+      loadCartFromStorage();
     }
   }, [restaurantSlug]);
+
+  useEffect(() => {
+    if (itemId && menuItems.length > 0) {
+      const item = menuItems.find(item => item.id === itemId);
+      if (item) {
+        setSelectedItem(item);
+        setIsItemModalOpen(true);
+      }
+    }
+  }, [itemId, menuItems]);
 
   const loadRestaurantData = async () => {
     try {
@@ -88,23 +103,36 @@ const RestaurantPublicPage: React.FC = () => {
     }
   };
 
+  const loadCartFromStorage = () => {
+    const savedCart = localStorage.getItem(`cart_${restaurantSlug}`);
+    if (savedCart) {
+      setCart(JSON.parse(savedCart));
+    }
+  };
+
+  const saveCartToStorage = (newCart: CartItem[]) => {
+    localStorage.setItem(`cart_${restaurantSlug}`, JSON.stringify(newCart));
+  };
+
   const addToCart = (item: MenuItem) => {
-    setCart(prev => {
-      const existingItem = prev.find(cartItem => cartItem.id === item.id);
-      if (existingItem) {
-        return prev.map(cartItem =>
-          cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
-            : cartItem
-        );
-      }
-      return [...prev, { ...item, quantity: 1 }];
-    });
+    const newCart = [...cart];
+    const existingItem = newCart.find(cartItem => cartItem.id === item.id);
+    
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      newCart.push({ ...item, quantity: 1 });
+    }
+    
+    setCart(newCart);
+    saveCartToStorage(newCart);
     toast.success(`${item.name} added to cart`);
   };
 
   const removeFromCart = (itemId: string) => {
-    setCart(prev => prev.filter(item => item.id !== itemId));
+    const newCart = cart.filter(item => item.id !== itemId);
+    setCart(newCart);
+    saveCartToStorage(newCart);
   };
 
   const updateQuantity = (itemId: string, quantity: number) => {
@@ -112,11 +140,12 @@ const RestaurantPublicPage: React.FC = () => {
       removeFromCart(itemId);
       return;
     }
-    setCart(prev =>
-      prev.map(item =>
-        item.id === itemId ? { ...item, quantity } : item
-      )
+    
+    const newCart = cart.map(item =>
+      item.id === itemId ? { ...item, quantity } : item
     );
+    setCart(newCart);
+    saveCartToStorage(newCart);
   };
 
   const getCartTotal = () => {
@@ -125,6 +154,26 @@ const RestaurantPublicPage: React.FC = () => {
 
   const getCartItemCount = () => {
     return cart.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  const proceedToCheckout = () => {
+    if (cart.length === 0) {
+      toast.error('Your cart is empty');
+      return;
+    }
+    navigate(`/${restaurantSlug}/checkout`);
+  };
+
+  const viewItemDetails = (item: MenuItem) => {
+    setSelectedItem(item);
+    setIsItemModalOpen(true);
+    navigate(`/${restaurantSlug}/menu/${item.id}`);
+  };
+
+  const closeItemModal = () => {
+    setSelectedItem(null);
+    setIsItemModalOpen(false);
+    navigate(`/${restaurantSlug}`);
   };
 
   const renderStars = (rating: number) => {
@@ -189,6 +238,9 @@ const RestaurantPublicPage: React.FC = () => {
             <div className="flex items-center space-x-4">
               <Link to="/customer/auth">
                 <Button variant="outline">Customer Login</Button>
+              </Link>
+              <Link to={`/${restaurantSlug}/dashboard`}>
+                <Button variant="outline">Customer Dashboard</Button>
               </Link>
               <Button 
                 onClick={() => setIsCartOpen(true)}
@@ -279,12 +331,18 @@ const RestaurantPublicPage: React.FC = () => {
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-24 h-24 object-cover rounded-lg"
+                          className="w-24 h-24 object-cover rounded-lg cursor-pointer"
+                          onClick={() => viewItemDetails(item)}
                         />
                         <div className="flex-1">
                           <div className="flex items-start justify-between">
                             <div>
-                              <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                              <h3 
+                                className="font-semibold text-gray-900 cursor-pointer hover:text-orange-600"
+                                onClick={() => viewItemDetails(item)}
+                              >
+                                {item.name}
+                              </h3>
                               <p className="text-sm text-gray-600 mt-1">{item.description}</p>
                               {item.allergens && item.allergens.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-2">
@@ -298,9 +356,17 @@ const RestaurantPublicPage: React.FC = () => {
                             </div>
                             <span className="text-lg font-bold text-orange-500">${item.price}</span>
                           </div>
-                          <div className="mt-3">
+                          <div className="mt-3 flex items-center space-x-2">
                             <Button size="sm" onClick={() => addToCart(item)}>
                               Add to Cart
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => viewItemDetails(item)}
+                              icon={<Eye className="w-4 h-4" />}
+                            >
+                              View
                             </Button>
                           </div>
                         </div>
@@ -402,6 +468,11 @@ const RestaurantPublicPage: React.FC = () => {
               <Button fullWidth icon={<Heart className="w-5 h-5" />} variant="outline">
                 Add to Favorites
               </Button>
+              <Link to={`/${restaurantSlug}/admin`}>
+                <Button fullWidth variant="outline">
+                  Restaurant Admin
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -460,13 +531,78 @@ const RestaurantPublicPage: React.FC = () => {
                   <span className="text-lg font-semibold">Total:</span>
                   <span className="text-lg font-bold text-orange-500">${getCartTotal().toFixed(2)}</span>
                 </div>
-                <Button fullWidth size="lg">
+                <Button fullWidth size="lg" onClick={proceedToCheckout}>
                   Proceed to Checkout
                 </Button>
               </div>
             </>
           )}
         </div>
+      </Modal>
+
+      {/* Item Details Modal */}
+      <Modal
+        isOpen={isItemModalOpen}
+        onClose={closeItemModal}
+        title={selectedItem?.name || ''}
+        size="lg"
+      >
+        {selectedItem && (
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <img
+                  src={selectedItem.image}
+                  alt={selectedItem.name}
+                  className="w-full h-64 object-cover rounded-lg"
+                />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedItem.name}</h2>
+                <p className="text-gray-600 mb-4">{selectedItem.description}</p>
+                <div className="text-2xl font-bold text-orange-500 mb-4">${selectedItem.price}</div>
+                
+                {selectedItem.allergens && selectedItem.allergens.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">Allergens</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedItem.allergens.map((allergen, idx) => (
+                        <span key={idx} className="inline-flex px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+                          {allergen}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedItem.nutritionalInfo && (
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">Nutritional Information</h3>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {Object.entries(selectedItem.nutritionalInfo).map(([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="capitalize">{key}:</span>
+                          <span>{value}{key === 'calories' ? '' : 'g'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <Button 
+                  fullWidth 
+                  size="lg" 
+                  onClick={() => {
+                    addToCart(selectedItem);
+                    closeItemModal();
+                  }}
+                >
+                  Add to Cart - ${selectedItem.price}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
