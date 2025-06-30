@@ -48,14 +48,14 @@ const CustomerDashboard: React.FC = () => {
   return (
     <CustomerLayout>
       <Routes>
-        <Route path="/" element={<Navigate to="/customer/dashboard/overview" replace />} />
+        <Route path="/" element={<Navigate to="overview" replace />} />
         <Route path="/overview" element={<CustomerOverview />} />
         <Route path="/orders" element={<CustomerOrders />} />
         <Route path="/reviews" element={<CustomerReviews />} />
         <Route path="/favorites" element={<CustomerFavorites />} />
         <Route path="/loyalty" element={<CustomerLoyalty />} />
         <Route path="/profile" element={<CustomerProfile />} />
-        <Route path="*" element={<Navigate to="/customer/dashboard/overview" replace />} />
+        <Route path="*" element={<Navigate to="overview" replace />} />
       </Routes>
     </CustomerLayout>
   );
