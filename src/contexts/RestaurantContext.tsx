@@ -40,24 +40,35 @@ export const RestaurantProvider: React.FC<RestaurantProviderProps> = ({ children
   useEffect(() => {
     if (isAuthenticated && user) {
       loadRestaurants();
+    } else {
+      // Clear data when user logs out
+      setRestaurants([]);
+      setCurrentRestaurant(null);
     }
   }, [isAuthenticated, user]);
 
   const loadRestaurants = async () => {
+    if (!user) return;
+    
     try {
       setLoading(true);
       const allRestaurants = await sdk.get<Restaurant>('restaurants');
       
-      // Filter restaurants based on user role
+      // Filter restaurants based on user role and ownership
       const userRestaurants = user?.roles?.includes('super_admin') 
         ? allRestaurants 
         : allRestaurants.filter(r => r.ownerId === user?.id || r.ownerId === user?.uid);
       
       setRestaurants(userRestaurants);
       
-      // Auto-select first restaurant if none selected
+      // Auto-select first restaurant if none selected and user has restaurants
       if (!currentRestaurant && userRestaurants.length > 0) {
         setCurrentRestaurant(userRestaurants[0]);
+      }
+      
+      // If current restaurant is not in user's restaurants, clear it
+      if (currentRestaurant && !userRestaurants.find(r => r.id === currentRestaurant.id)) {
+        setCurrentRestaurant(userRestaurants.length > 0 ? userRestaurants[0] : null);
       }
     } catch (error) {
       console.error('Failed to load restaurants:', error);
@@ -68,6 +79,11 @@ export const RestaurantProvider: React.FC<RestaurantProviderProps> = ({ children
   };
 
   const createRestaurant = async (data: Partial<Restaurant>): Promise<Restaurant | null> => {
+    if (!user) {
+      toast.error('User not authenticated');
+      return null;
+    }
+
     try {
       setLoading(true);
       
@@ -140,7 +156,8 @@ export const RestaurantProvider: React.FC<RestaurantProviderProps> = ({ children
       setRestaurants(prev => prev.filter(r => r.id !== id && r.uid !== id));
       
       if (currentRestaurant && (currentRestaurant.id === id || currentRestaurant.uid === id)) {
-        setCurrentRestaurant(restaurants.length > 1 ? restaurants[0] : null);
+        const remainingRestaurants = restaurants.filter(r => r.id !== id && r.uid !== id);
+        setCurrentRestaurant(remainingRestaurants.length > 0 ? remainingRestaurants[0] : null);
       }
       
       toast.success('Restaurant deleted successfully!');
