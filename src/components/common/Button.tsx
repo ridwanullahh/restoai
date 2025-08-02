@@ -2,7 +2,7 @@ import React, { ButtonHTMLAttributes, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import LoadingSpinner from './LoadingSpinner';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
