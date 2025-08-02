@@ -41,6 +41,13 @@ const CustomerOrdersPage: React.FC<CustomerOrdersPageProps> = ({ customer }) => 
   useEffect(() => {
     if (customer) {
       loadOrders();
+
+      // Set up real-time order updates
+      const interval = setInterval(() => {
+        loadOrders();
+      }, 30000); // Refresh every 30 seconds
+
+      return () => clearInterval(interval);
     }
   }, [customer]);
 
@@ -90,22 +97,33 @@ const CustomerOrdersPage: React.FC<CustomerOrdersPageProps> = ({ customer }) => 
   const handleReorder = async (order: Order) => {
     try {
       setReordering(true);
-      
-      // In a real app, this would add items to cart and redirect to checkout
-      // For now, we'll simulate the process
-      
-      // Add items to cart (this would integrate with your cart context)
-      order.items.forEach(item => {
-        // addToCart(item);
-      });
-      
-      toast.success('Items added to cart! Redirecting to checkout...');
-      
-      // Redirect to checkout
-      setTimeout(() => {
-        window.location.href = `/${restaurantSlug}/checkout`;
-      }, 1000);
-      
+
+      // Create a new order with the same items
+      const newOrderData = {
+        customerId: customer?.id,
+        restaurantId: order.restaurantId,
+        items: order.items.map(item => ({
+          ...item,
+          id: undefined // Remove ID to create new items
+        })),
+        subtotal: order.subtotal,
+        tax: order.tax,
+        deliveryFee: order.deliveryFee,
+        total: order.total,
+        status: 'pending',
+        orderDate: new Date().toISOString(),
+        deliveryAddress: order.deliveryAddress,
+        paymentMethod: order.paymentMethod,
+        specialInstructions: order.specialInstructions
+      };
+
+      const newOrder = await sdk.insert('orders', newOrderData);
+
+      toast.success('Order placed successfully! You can track it in your orders.');
+
+      // Refresh orders list
+      await loadOrders();
+
     } catch (error) {
       console.error('Failed to reorder:', error);
       toast.error('Failed to reorder items');

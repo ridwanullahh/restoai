@@ -48,27 +48,29 @@ const CustomerOverviewPage: React.FC<CustomerOverviewPageProps> = ({ customer, s
   const loadRecentActivity = async () => {
     try {
       setLoading(true);
-      
-      // Load recent orders
+
+      // Load recent orders with more details
       const orders = await sdk.queryBuilder<Order>('orders')
         .where(o => o.customerId === customer?.id)
         .sort('orderDate', 'desc')
-        .limit(3)
+        .limit(5)
         .exec();
       setRecentOrders(orders);
-      
-      // Load upcoming reservations
+
+      // Load upcoming reservations with more filtering
       const reservations = await sdk.queryBuilder<Reservation>('reservations')
         .where(r => r.customerInfo.email === customer?.email && r.status !== 'cancelled')
         .sort('date', 'asc')
-        .limit(3)
         .exec();
-      
-      const upcoming = reservations.filter(r => 
-        new Date(r.date) >= new Date() && r.status !== 'completed'
-      );
+
+      const now = new Date();
+      const upcoming = reservations.filter(r => {
+        const reservationDate = new Date(`${r.date}T${r.time}`);
+        return reservationDate >= now && r.status !== 'completed';
+      }).slice(0, 3);
+
       setUpcomingReservations(upcoming);
-      
+
     } catch (error) {
       console.error('Failed to load recent activity:', error);
     } finally {

@@ -46,13 +46,28 @@ const CustomerReservationsPage: React.FC<CustomerReservationsPageProps> = ({ cus
   const loadReservations = async () => {
     try {
       setLoading(true);
-      
+
       const reservationsData = await sdk.queryBuilder<Reservation>('reservations')
         .where(r => r.customerInfo.email === customer?.email)
         .sort('date', 'desc')
         .exec();
-      
-      setReservations(reservationsData);
+
+      // Add real-time status updates for upcoming reservations
+      const now = new Date();
+      const updatedReservations = reservationsData.map(reservation => {
+        const reservationDateTime = new Date(`${reservation.date}T${reservation.time}`);
+        const hoursUntil = (reservationDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+        // Auto-update status based on time
+        if (hoursUntil < 0 && reservation.status === 'confirmed') {
+          // Past reservation that wasn't updated
+          return { ...reservation, status: 'completed' as const };
+        }
+
+        return reservation;
+      });
+
+      setReservations(updatedReservations);
     } catch (error) {
       console.error('Failed to load reservations:', error);
       toast.error('Failed to load reservations');
