@@ -1,16 +1,25 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  Menu, 
-  ShoppingBag, 
-  Star, 
-  Users, 
-  BarChart3, 
-  MessageCircle, 
-  Package, 
+import {
+  LayoutDashboard,
+  Menu,
+  ShoppingBag,
+  Star,
+  Users,
+  BarChart3,
+  MessageCircle,
+  Package,
   Gift,
-  Settings
+  Settings,
+  Folder,
+  Palette,
+  FileText,
+  Calendar,
+  Percent,
+  UserCheck,
+  Mail,
+  Share2,
+  Shield
 } from 'lucide-react';
 import { useLocation, Link, useParams } from 'react-router-dom';
 
@@ -25,13 +34,22 @@ const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: `/${restaurantSlug}/admin/overview` },
     { icon: Menu, label: 'Menu Management', path: `/${restaurantSlug}/admin/menu` },
+    { icon: Folder, label: 'Menu Categories', path: `/${restaurantSlug}/admin/menu-categories` },
     { icon: ShoppingBag, label: 'Orders', path: `/${restaurantSlug}/admin/orders` },
+    { icon: Calendar, label: 'Reservations', path: `/${restaurantSlug}/admin/reservations` },
     { icon: Star, label: 'Reviews', path: `/${restaurantSlug}/admin/reviews` },
     { icon: Users, label: 'Customers', path: `/${restaurantSlug}/admin/customers` },
+    { icon: UserCheck, label: 'CRM & Segments', path: `/${restaurantSlug}/admin/crm` },
+    { icon: Percent, label: 'Discounts', path: `/${restaurantSlug}/admin/discounts` },
+    { icon: FileText, label: 'Blog Management', path: `/${restaurantSlug}/admin/blog` },
     { icon: BarChart3, label: 'Analytics', path: `/${restaurantSlug}/admin/analytics` },
     { icon: MessageCircle, label: 'AI Assistant', path: `/${restaurantSlug}/admin/ai-assistant` },
     { icon: Package, label: 'Inventory', path: `/${restaurantSlug}/admin/inventory` },
     { icon: Gift, label: 'Promotions', path: `/${restaurantSlug}/admin/promotions` },
+    { icon: Mail, label: 'Email Marketing', path: `/${restaurantSlug}/admin/email-marketing` },
+    { icon: Share2, label: 'Referrals', path: `/${restaurantSlug}/admin/referrals` },
+    { icon: Shield, label: 'Reputation', path: `/${restaurantSlug}/admin/reputation` },
+    { icon: Palette, label: 'Themes', path: `/${restaurantSlug}/admin/themes` },
     { icon: Settings, label: 'Settings', path: `/${restaurantSlug}/admin/settings` },
   ];
 

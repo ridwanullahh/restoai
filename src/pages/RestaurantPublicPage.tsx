@@ -236,13 +236,16 @@ const RestaurantPublicPage: React.FC = () => {
               RestaurantOS
             </Link>
             <div className="flex items-center space-x-4">
+              <Link to={`/${restaurantSlug}/reservations`}>
+                <Button variant="outline">Make Reservation</Button>
+              </Link>
+              <Link to={`/${restaurantSlug}/blog`}>
+                <Button variant="outline">Blog</Button>
+              </Link>
               <Link to="/customer/auth">
                 <Button variant="outline">Customer Login</Button>
               </Link>
-              <Link to={`/${restaurantSlug}/dashboard`}>
-                <Button variant="outline">Customer Dashboard</Button>
-              </Link>
-              <Button 
+              <Button
                 onClick={() => setIsCartOpen(true)}
                 className="relative"
               >

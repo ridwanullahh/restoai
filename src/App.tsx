@@ -20,6 +20,10 @@ import CustomerAuthPage from './pages/customer/CustomerAuthPage';
 import LandingPage from './pages/LandingPage';
 import RestaurantPublicPage from './pages/RestaurantPublicPage';
 import CheckoutPage from './pages/CheckoutPage';
+import MenuItemDetailPage from './pages/MenuItemDetailPage';
+import ReservationBookingPage from './pages/ReservationBookingPage';
+import BlogPage from './pages/BlogPage';
+import BlogPostPage from './pages/BlogPostPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -112,9 +116,12 @@ const App: React.FC = () => {
                 {/* Restaurant Public Pages */}
                 <Route path="/:restaurantSlug" element={<RestaurantPublicPage />} />
                 <Route path="/:restaurantSlug/menu" element={<RestaurantPublicPage />} />
-                <Route path="/:restaurantSlug/menu/:itemId" element={<RestaurantPublicPage />} />
+                <Route path="/:restaurantSlug/menu/:itemId" element={<MenuItemDetailPage />} />
                 <Route path="/:restaurantSlug/reviews" element={<RestaurantPublicPage />} />
                 <Route path="/:restaurantSlug/checkout" element={<CheckoutPage />} />
+                <Route path="/:restaurantSlug/reservations" element={<ReservationBookingPage />} />
+                <Route path="/:restaurantSlug/blog" element={<BlogPage />} />
+                <Route path="/:restaurantSlug/blog/:postSlug" element={<BlogPostPage />} />
                 
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />
