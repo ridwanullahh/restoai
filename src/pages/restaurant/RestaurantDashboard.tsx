@@ -19,6 +19,15 @@ import AIAssistantPage from './AIAssistantPage';
 import InventoryPage from './InventoryPage';
 import PromotionsPage from './PromotionsPage';
 import SettingsPage from './SettingsPage';
+import MenuCategoriesPage from './MenuCategoriesPage';
+import ThemeManagementPage from './ThemeManagementPage';
+import BlogManagementPage from './BlogManagementPage';
+import ReservationsPage from './ReservationsPage';
+import DiscountManagementPage from './DiscountManagementPage';
+import CRMPage from './CRMPage';
+import EmailMarketingPage from './EmailMarketingPage';
+import ReferralManagementPage from './ReferralManagementPage';
+import ReputationManagementPage from './ReputationManagementPage';
 
 const RestaurantLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
@@ -86,13 +95,22 @@ const RestaurantDashboard: React.FC = () => {
         <Route path="/" element={<Navigate to="overview" replace />} />
         <Route path="/overview" element={<DashboardPage />} />
         <Route path="/menu" element={<MenuPage />} />
+        <Route path="/menu-categories" element={<MenuCategoriesPage />} />
         <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/reservations" element={<ReservationsPage />} />
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/customers" element={<CustomersPage />} />
+        <Route path="/crm" element={<CRMPage />} />
+        <Route path="/discounts" element={<DiscountManagementPage />} />
+        <Route path="/blog" element={<BlogManagementPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/ai-assistant" element={<AIAssistantPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
         <Route path="/promotions" element={<PromotionsPage />} />
+        <Route path="/email-marketing" element={<EmailMarketingPage />} />
+        <Route path="/referrals" element={<ReferralManagementPage />} />
+        <Route path="/reputation" element={<ReputationManagementPage />} />
+        <Route path="/themes" element={<ThemeManagementPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="overview" replace />} />
       </Routes>

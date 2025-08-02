@@ -386,6 +386,268 @@ export const sdk = new UniversalSDK({
         createdAt: new Date().toISOString(),
         data: {}
       }
+    },
+    menuCategories: {
+      required: ['restaurantId', 'name'],
+      types: {
+        restaurantId: 'string',
+        name: 'string',
+        description: 'string',
+        displayOrder: 'number',
+        active: 'boolean',
+        image: 'string',
+        createdAt: 'date',
+        updatedAt: 'date'
+      },
+      defaults: {
+        active: true,
+        displayOrder: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    },
+    themes: {
+      required: ['name', 'config'],
+      types: {
+        name: 'string',
+        displayName: 'string',
+        description: 'string',
+        config: 'object',
+        preview: 'string',
+        active: 'boolean',
+        createdAt: 'date'
+      },
+      defaults: {
+        active: true,
+        createdAt: new Date().toISOString()
+      }
+    },
+    blogPosts: {
+      required: ['restaurantId', 'title', 'content'],
+      types: {
+        restaurantId: 'string',
+        title: 'string',
+        slug: 'string',
+        content: 'string',
+        excerpt: 'string',
+        featuredImage: 'string',
+        author: 'string',
+        status: 'string',
+        publishedAt: 'date',
+        tags: 'array',
+        categories: 'array',
+        seoTitle: 'string',
+        seoDescription: 'string',
+        viewCount: 'number',
+        commentsEnabled: 'boolean',
+        createdAt: 'date',
+        updatedAt: 'date'
+      },
+      defaults: {
+        status: 'draft',
+        tags: [],
+        categories: [],
+        viewCount: 0,
+        commentsEnabled: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    },
+    blogComments: {
+      required: ['postId', 'author', 'content'],
+      types: {
+        postId: 'string',
+        author: 'string',
+        email: 'string',
+        content: 'string',
+        status: 'string',
+        parentId: 'string',
+        createdAt: 'date'
+      },
+      defaults: {
+        status: 'approved',
+        createdAt: new Date().toISOString()
+      }
+    },
+    reservations: {
+      required: ['restaurantId', 'customerInfo', 'date', 'time', 'partySize'],
+      types: {
+        restaurantId: 'string',
+        customerId: 'string',
+        customerInfo: 'object',
+        date: 'string',
+        time: 'string',
+        partySize: 'number',
+        status: 'string',
+        tableNumber: 'string',
+        specialRequests: 'string',
+        confirmationCode: 'string',
+        reminderSent: 'boolean',
+        createdAt: 'date',
+        updatedAt: 'date'
+      },
+      defaults: {
+        status: 'pending',
+        reminderSent: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    },
+    waitlist: {
+      required: ['restaurantId', 'customerInfo', 'date', 'partySize'],
+      types: {
+        restaurantId: 'string',
+        customerId: 'string',
+        customerInfo: 'object',
+        date: 'string',
+        partySize: 'number',
+        estimatedWait: 'number',
+        status: 'string',
+        position: 'number',
+        notificationSent: 'boolean',
+        createdAt: 'date',
+        updatedAt: 'date'
+      },
+      defaults: {
+        status: 'waiting',
+        position: 0,
+        notificationSent: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    },
+    discounts: {
+      required: ['restaurantId', 'name', 'type', 'value'],
+      types: {
+        restaurantId: 'string',
+        name: 'string',
+        code: 'string',
+        type: 'string',
+        value: 'number',
+        minOrderAmount: 'number',
+        maxDiscount: 'number',
+        usageLimit: 'number',
+        usageCount: 'number',
+        validFrom: 'date',
+        validUntil: 'date',
+        active: 'boolean',
+        applicableItems: 'array',
+        customerSegments: 'array',
+        createdAt: 'date',
+        updatedAt: 'date'
+      },
+      defaults: {
+        usageCount: 0,
+        active: true,
+        applicableItems: [],
+        customerSegments: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    },
+    loyaltyPrograms: {
+      required: ['restaurantId', 'name', 'pointsPerDollar'],
+      types: {
+        restaurantId: 'string',
+        name: 'string',
+        description: 'string',
+        pointsPerDollar: 'number',
+        rewardTiers: 'array',
+        active: 'boolean',
+        createdAt: 'date',
+        updatedAt: 'date'
+      },
+      defaults: {
+        active: true,
+        rewardTiers: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    },
+    customerSegments: {
+      required: ['restaurantId', 'name', 'criteria'],
+      types: {
+        restaurantId: 'string',
+        name: 'string',
+        description: 'string',
+        criteria: 'object',
+        customerCount: 'number',
+        active: 'boolean',
+        createdAt: 'date',
+        updatedAt: 'date'
+      },
+      defaults: {
+        customerCount: 0,
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    },
+    referrals: {
+      required: ['restaurantId', 'referrerId', 'refereeEmail'],
+      types: {
+        restaurantId: 'string',
+        referrerId: 'string',
+        refereeId: 'string',
+        refereeEmail: 'string',
+        referralCode: 'string',
+        status: 'string',
+        rewardAmount: 'number',
+        rewardClaimed: 'boolean',
+        completedAt: 'date',
+        createdAt: 'date'
+      },
+      defaults: {
+        status: 'pending',
+        rewardClaimed: false,
+        createdAt: new Date().toISOString()
+      }
+    },
+    emailCampaigns: {
+      required: ['restaurantId', 'name', 'subject', 'content'],
+      types: {
+        restaurantId: 'string',
+        name: 'string',
+        subject: 'string',
+        content: 'string',
+        type: 'string',
+        status: 'string',
+        targetSegments: 'array',
+        scheduledAt: 'date',
+        sentAt: 'date',
+        recipientCount: 'number',
+        openRate: 'number',
+        clickRate: 'number',
+        createdAt: 'date',
+        updatedAt: 'date'
+      },
+      defaults: {
+        type: 'promotional',
+        status: 'draft',
+        targetSegments: [],
+        recipientCount: 0,
+        openRate: 0,
+        clickRate: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    },
+    reputationMetrics: {
+      required: ['restaurantId', 'platform', 'rating'],
+      types: {
+        restaurantId: 'string',
+        platform: 'string',
+        rating: 'number',
+        reviewCount: 'number',
+        lastUpdated: 'date',
+        trends: 'object',
+        createdAt: 'date'
+      },
+      defaults: {
+        reviewCount: 0,
+        trends: {},
+        createdAt: new Date().toISOString()
+      }
     }
   },
   auth: {
