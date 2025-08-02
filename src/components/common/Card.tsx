@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 
-interface CardProps {
+export interface CardProps {
   children: ReactNode;
   className?: string;
   hover?: boolean;
