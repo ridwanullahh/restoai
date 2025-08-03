@@ -343,6 +343,251 @@ export const defaultThemes: Omit<Theme, 'id' | 'uid' | 'createdAt'>[] = [
         }
       }
     }
+  },
+  {
+    name: 'ocean',
+    displayName: 'Ocean Breeze',
+    description: 'Cool blues and aqua tones perfect for seafood restaurants',
+    active: true,
+    preview: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=300&fit=crop',
+    config: {
+      colors: {
+        primary: '#0EA5E9',
+        secondary: '#06B6D4',
+        accent: '#67E8F9',
+        background: '#F0F9FF',
+        surface: '#FFFFFF',
+        text: '#0C4A6E',
+        textSecondary: '#0369A1'
+      },
+      typography: {
+        fontFamily: 'Nunito, sans-serif',
+        headingFont: 'Poppins, sans-serif',
+        fontSize: {
+          xs: '0.75rem',
+          sm: '0.875rem',
+          base: '1rem',
+          lg: '1.125rem',
+          xl: '1.25rem',
+          '2xl': '1.5rem',
+          '3xl': '1.875rem'
+        }
+      },
+      layout: {
+        borderRadius: '1rem',
+        spacing: '1rem',
+        maxWidth: '1200px'
+      },
+      components: {
+        header: {
+          style: 'clean',
+          transparent: true
+        },
+        buttons: {
+          style: 'pill'
+        },
+        cards: {
+          shadow: 'medium',
+          border: false
+        }
+      }
+    }
+  },
+  {
+    name: 'forest',
+    displayName: 'Forest Garden',
+    description: 'Natural greens and earth tones for organic and farm-to-table restaurants',
+    active: true,
+    preview: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop',
+    config: {
+      colors: {
+        primary: '#059669',
+        secondary: '#10B981',
+        accent: '#6EE7B7',
+        background: '#F0FDF4',
+        surface: '#FFFFFF',
+        text: '#064E3B',
+        textSecondary: '#047857'
+      },
+      typography: {
+        fontFamily: 'Source Sans Pro, sans-serif',
+        headingFont: 'Merriweather, serif',
+        fontSize: {
+          xs: '0.75rem',
+          sm: '0.875rem',
+          base: '1rem',
+          lg: '1.125rem',
+          xl: '1.25rem',
+          '2xl': '1.5rem',
+          '3xl': '1.875rem'
+        }
+      },
+      layout: {
+        borderRadius: '0.5rem',
+        spacing: '1rem',
+        maxWidth: '1200px'
+      },
+      components: {
+        header: {
+          style: 'natural',
+          transparent: false
+        },
+        buttons: {
+          style: 'organic'
+        },
+        cards: {
+          shadow: 'soft',
+          border: true
+        }
+      }
+    }
+  },
+  {
+    name: 'midnight',
+    displayName: 'Midnight Luxury',
+    description: 'Dark and sophisticated theme for upscale dining establishments',
+    active: true,
+    preview: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop',
+    config: {
+      colors: {
+        primary: '#7C3AED',
+        secondary: '#A855F7',
+        accent: '#C4B5FD',
+        background: '#0F0F23',
+        surface: '#1E1B4B',
+        text: '#E2E8F0',
+        textSecondary: '#CBD5E1'
+      },
+      typography: {
+        fontFamily: 'Inter, sans-serif',
+        headingFont: 'Playfair Display, serif',
+        fontSize: {
+          xs: '0.75rem',
+          sm: '0.875rem',
+          base: '1rem',
+          lg: '1.125rem',
+          xl: '1.25rem',
+          '2xl': '1.5rem',
+          '3xl': '1.875rem'
+        }
+      },
+      layout: {
+        borderRadius: '0.5rem',
+        spacing: '1rem',
+        maxWidth: '1200px'
+      },
+      components: {
+        header: {
+          style: 'luxury',
+          transparent: true
+        },
+        buttons: {
+          style: 'elegant'
+        },
+        cards: {
+          shadow: 'large',
+          border: false
+        }
+      }
+    }
+  },
+  {
+    name: 'rustic',
+    displayName: 'Rustic Charm',
+    description: 'Earthy browns and warm textures for country-style restaurants',
+    active: true,
+    preview: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop',
+    config: {
+      colors: {
+        primary: '#92400E',
+        secondary: '#B45309',
+        accent: '#FCD34D',
+        background: '#FFFBEB',
+        surface: '#FFFFFF',
+        text: '#451A03',
+        textSecondary: '#78350F'
+      },
+      typography: {
+        fontFamily: 'Libre Baskerville, serif',
+        headingFont: 'Fredoka One, cursive',
+        fontSize: {
+          xs: '0.75rem',
+          sm: '0.875rem',
+          base: '1rem',
+          lg: '1.125rem',
+          xl: '1.25rem',
+          '2xl': '1.5rem',
+          '3xl': '1.875rem'
+        }
+      },
+      layout: {
+        borderRadius: '0.375rem',
+        spacing: '1rem',
+        maxWidth: '1180px'
+      },
+      components: {
+        header: {
+          style: 'rustic',
+          transparent: false
+        },
+        buttons: {
+          style: 'handcrafted'
+        },
+        cards: {
+          shadow: 'soft',
+          border: true
+        }
+      }
+    }
+  },
+  {
+    name: 'neon',
+    displayName: 'Neon Nights',
+    description: 'Electric colors and modern design for trendy nightlife venues',
+    active: true,
+    preview: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop',
+    config: {
+      colors: {
+        primary: '#EC4899',
+        secondary: '#F59E0B',
+        accent: '#10B981',
+        background: '#111827',
+        surface: '#1F2937',
+        text: '#F9FAFB',
+        textSecondary: '#D1D5DB'
+      },
+      typography: {
+        fontFamily: 'Orbitron, monospace',
+        headingFont: 'Exo 2, sans-serif',
+        fontSize: {
+          xs: '0.75rem',
+          sm: '0.875rem',
+          base: '1rem',
+          lg: '1.125rem',
+          xl: '1.25rem',
+          '2xl': '1.5rem',
+          '3xl': '1.875rem'
+        }
+      },
+      layout: {
+        borderRadius: '0.25rem',
+        spacing: '1rem',
+        maxWidth: '1400px'
+      },
+      components: {
+        header: {
+          style: 'futuristic',
+          transparent: false
+        },
+        buttons: {
+          style: 'neon'
+        },
+        cards: {
+          shadow: 'glow',
+          border: true
+        }
+      }
+    }
   }
 ];
 
